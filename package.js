@@ -15,7 +15,7 @@ Package.onUse(function(api) {
   api.use('underscore');
   api.use('alanning:update-helpers@0.0.1');
   api.use('meteorhacks:async@1.0.0');
-  api.export("ElasticSearch");
+  api.export('ElasticSearch', 'server');
   api.addFiles('elasticsearch.js', 'server');
 });
 
