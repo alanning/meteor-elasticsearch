@@ -13,8 +13,8 @@ Npm.depends({
 Package.onUse(function(api) {
   api.versionsFrom('1.1.0.2');
   api.use('underscore');
-  api.use('alanning:update-helpers');
-  api.use('meteorhacks:async');
+  api.use('alanning:update-helpers@0.0.1');
+  api.use('meteorhacks:async@1.0.0');
   api.export("ElasticSearch");
   api.addFiles('elasticsearch.js', 'server');
 });
