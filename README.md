@@ -21,3 +21,12 @@ $ cd meteor-elasticsearch
 $ yuidoc --server 8080 .
 $ open localhost:8080
 ```
+
+## Running Tests
+
+```
+$ git clone https://github.com/alanning/meteor-elasticsearch.git
+$ cd meteor-elasticsearch
+$ meteor test-packages ./
+$ open localhost:3000
+```
