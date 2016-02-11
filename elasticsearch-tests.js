@@ -139,6 +139,9 @@ Tinytest.add('elasticsearch - partialUpdate', function (test) {
       name: "John",
       age: 10
     },
+    tags: ["camping", "apparel"],
+    ratings: [{rating: 2},
+              {rating: 10}],
     score: 300,
     roles: ["manage-users", "view-secrets"]
   };
@@ -159,7 +162,9 @@ Tinytest.add('elasticsearch - partialUpdate', function (test) {
       }
     },
     $set: {
-      "profile.name": "Barry"
+      "profile.name": "Barry",
+      "tags.1": "rain gear",
+      "ratings.0.rating": 5
     },
     $inc: {
       "score": -10
@@ -173,6 +178,9 @@ Tinytest.add('elasticsearch - partialUpdate', function (test) {
     profile: {
       name: "Barry"
     },
+    tags: ["camping", "rain gear"],
+    ratings: [{rating: 5},
+              {rating: 10}],
     score: 290,
     roles: ["manage-users", "view-secrets", "super-admin"]
   };
@@ -194,7 +202,7 @@ Tinytest.add('elasticsearch - partialUpdate', function (test) {
 //////////////////////////////////////////////////////////////////////
 // mongo2es - $set
 //
-Tinytest.add('mongo2es - $set', function (test) {
+Tinytest.add('mongo2es - $set primitive', function (test) {
   var mutator,
       expected,
       actual;
@@ -204,7 +212,7 @@ Tinytest.add('mongo2es - $set', function (test) {
   actual = ElasticSearch.mongo2es(mutator);
   test.equal(actual, expected);
 });
-Tinytest.add('mongo2es - $set with object', function (test) {
+Tinytest.add('mongo2es - $set object', function (test) {
   var mutator,
       expected,
       actual;
@@ -214,6 +222,32 @@ Tinytest.add('mongo2es - $set with object', function (test) {
   expected = {script: "ctx._source.profile = [\"name\":\"John\",\"age\":35]"};
   actual = ElasticSearch.mongo2es(mutator);
   test.equal(actual, expected);
+});
+Tinytest.add('mongo2es - $set elements in array', function (test) {
+  var mutator,
+      expected,
+      actual;
+
+  mutator = {$set: {"tags.1": "rain gear"}};
+  expected = {script: "ctx._source.tags[1] = \"rain gear\""};
+  actual = ElasticSearch.mongo2es(mutator);
+  test.equal(actual, expected);
+
+  mutator = {$set: {"ratings.0.rating": 2}};
+  expected = {script: "ctx._source.ratings[0].rating = 2"};
+  actual = ElasticSearch.mongo2es(mutator);
+  test.equal(actual, expected);
+});
+Tinytest.add('mongo2es - $set with $ throws error', function (test) {
+  var mutator,
+      actual;
+
+  mutator = {$set: {"grades.$": 35}};
+  try {
+    actual = ElasticSearch.mongo2es(mutator);
+    test.fail("Expected error")
+  } catch (ex) {
+  }
 });
 
 

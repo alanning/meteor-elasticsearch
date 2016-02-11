@@ -205,11 +205,23 @@ _.extend(ElasticSearch, {
      * Converts MongoDB `$set` operation to the equivalent ElasticSearch
      * groovy script.
      *
+     * Supports indexed array elements ('tags.1') but throws error on
+     * use of '$' since we can't determine which index should be updated.
+     *
      * @method transforms.$set
      * @param {Object} params MongoDB parameter object
      *                        
      *     {"profile.name": "John"}
      *       => {"script": "ctx._source.profile.name = \"John\""}
+     *
+     *     {"tags.1": "rain gear"}
+     *       => {"script": "ctx._source.tags[1] = \"rain gear\""}
+     *
+     *     {"ratings.0.rating": 10}
+     *       => {"script": "ctx._source.ratings[0].rating = 10"}
+     *
+     *     {"ratings.$.rating": 10}
+     *       => throws Error "'$' not supported"
      * @static
      */
     "$set": function (params) {
@@ -218,7 +230,26 @@ _.extend(ElasticSearch, {
           t = _.template(template);
 
       _.each(params, function (value, key) {
-        var strVal;
+        var strVal,
+            keyParts;
+
+        if (-1 !== key.indexOf('\.$')) {
+          throw new Error("[ElasticSearch.mongo2es] Error: Positional variable '$' not supported in '" + key + "'.  Use `update` to update the entire field.");
+        }
+
+        // convert specified array elements to groovy style
+        // ex:  "ratings.0.rating" => "ratings[0].rating"
+        // TODO: Verify generated groovy script actually works
+        keyParts = _.map(key.split('.'), function (keyPart) {
+          if (isNumeric(keyPart)) {
+            return "[" + keyPart + "]";
+          } else {
+            return "." + keyPart;
+          }
+        })
+        if (keyParts[0][0] === '.') {
+          keyParts[0] = keyParts[0].substring(1);
+        }
 
         if ("string" === typeof value) {
           strVal = '"' + value + '"';
@@ -228,7 +259,7 @@ _.extend(ElasticSearch, {
           strVal = JSON.stringify(value);
           strVal = strVal.replace('{', '[').replace('}', ']');
         }
-        results.push(t({key: key, value: strVal}));
+        results.push(t({key: keyParts.join(''), value: strVal}));
       });
 
       return {script: results.join(';')};
@@ -728,3 +759,8 @@ _.extend(ElasticSearch.prototype, {
   }  // end search
 
 });  // end _.extend ElasticSearch.prototype
+
+
+function isNumeric (n) {
+  return !isNaN(parseInt(n)) && isFinite(n);
+}

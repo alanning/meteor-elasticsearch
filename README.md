@@ -2,6 +2,16 @@
 
 Wraps the ElasticSearch NPM package and provides helper functions.
 
+`insert(doc)` - inserts a new document into elasticsearch
+`update(doc)` - perform a direct update of an existing document
+`partialUpdate(mongodbSelector, mongodbMutator)` - perform a 'smart' update of an existing document.  Can directly convert most commonly-used mongodb actions to their groovy counterparts (which elasticsearch can understand).  This is useful because it avoids the need to query mongodb to get the result of the change prior to updating elasticsearch.
+
+## Example App
+
+The following repo contains the regular Meteor Todos example app with user search added.  Each branch adds functionality so you can see the steps taken to add search to an existing application:
+
+https://github.com/Meteor-NY/devshop-elasticsearch
+
 ## Installation
 
 ```

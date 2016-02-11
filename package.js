@@ -1,6 +1,6 @@
 Package.describe({
   name: 'alanning:elasticsearch',
-  version: '0.0.3',
+  version: '0.0.4',
   summary: 'Wraps the ElasticSearch NPM package and provides helper functions.',
   git: 'https://github.com/alanning/meteor-elasticsearch.git',
   documentation: 'README.md'
